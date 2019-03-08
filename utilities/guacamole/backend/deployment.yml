@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: utilities
+  name: guacamole-backend
+  labels:
+    app: guacamole
+spec:
+  selector:
+    matchLabels:
+      app: guacamole
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: guacamole
+        tier: backend
+    spec:
+      containers:
+      - name: guacamole
+        image: guacamole/guacd:latest 
+        ports:
+        - name: guac-backend
+          containerPort: 4822
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guac-backend
+  namespace: utilities
+  labels:
+    app: guacamole
+spec:
+  ports:
+    - port: 4822
+  selector:
+    app: guacamole
+    tier: backend
+---

@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: utilities
+  name: guacamole-db
+  labels:
+    app: guacamole
+spec:
+  selector:
+    matchLabels:
+      app: guacamole
+      tier: db
+  template:
+    metadata:
+      labels:
+        app: guacamole
+        tier: db
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:latest 
+        ports:
+        - containerPort: 3306
+        env:
+          - name: MYSQL_RANDOM_ROOT_PASSWORD
+            value: '1'
+          - name: MYSQL_DATABASE
+            value: 'guacamoledb'
+          - name: MYSQL_USER
+            value: 'guacamoleuser'
+          - name: MYSQL_PASSWORD
+            value: 'guacamolepass'
+        volumeMounts:
+        - name: guacamole-db
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: guacamole-db
+        persistentVolumeClaim:
+          claimName: guacamole-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guacamole-db
+  namespace: utilities
+  labels:
+    app: guacamole
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: guacamole
+    tier: db
+---

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: utilities
+  name: guacamole-db
+  labels:
+    app: guacamole
+spec:
+  accessModes:
+    - ReadWriteOnce
+  dataSource: null
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: ""
+  volumeName: ceph-guacamole-db
+---

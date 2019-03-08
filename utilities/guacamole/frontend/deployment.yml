@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: utilities
+  name: guacamole-frontend
+  labels:
+    app: guacamole
+spec:
+  selector:
+    matchLabels:
+      app: guacamole
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: guacamole
+        tier: frontend
+    spec:
+      containers:
+      - name: guacamole
+        image: guacamole/guacamole:latest 
+        ports:
+        - name: guacamole-web
+          containerPort: 8080
+          protocol: TCP
+        env:
+          - name: TZ
+            value: 'America/Kentucky/Louisville'
+          - name: PUID
+            value: '2086'
+          - name: PGID
+            value: '2086'
+          - name: MYSQL_HOSTNAME
+            value: 'guacamole-db'
+          - name: MYSQL_DATABASE
+            value: 'guacamoledb'
+          - name: MYSQL_USER
+            value: 'guacamoleuser'
+          - name: MYSQL_PASSWORD
+            value: 'guacamolepass'
+          - name: GUACD_HOSTNAME
+            value: 'guacamole-backend'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: utilities
+  name: guacamole-frontend
+  labels:
+    app: guacamole
+  annotations:
+    metallb.universe.tf/allow-shared-ip: ekvm
+spec:
+  ports:
+  - name: guacamole-web
+    port: 15005
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: guacamole
+    tier: frontend
+  loadBalancerIP: 172.16.1.195
+  type: LoadBalancer
+---

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ceph-guacamole-db
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  cephfs:
+    monitors:
+      - 172.16.1.201:6789
+      - 172.16.1.202:6789
+      - 172.16.1.203:6789
+    path: /guacamole/db-data
+    secretRef:
+      name: ceph-key
+      namespace: system-homeprod
+    user: admin
+---
