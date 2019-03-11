@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: infrastructure
+  name: docker-registry-web
+  labels:
+    app: docker-registry-web
+spec:
+  selector:
+    matchLabels:
+      app: docker-registry-web
+  template:
+    metadata:
+      labels:
+        app: docker-registry-web
+    spec:
+      containers:
+      - name: docker-registry-web
+        image: hyper/docker-registry-web:latest 
+        volumeMounts:
+        - name: docker-registry-web-data
+          mountPath: /data
+        - name: docker-registry-web-config
+          mountPath: /conf
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+      volumes:
+      - name: docker-registry-web-data
+        persistentVolumeClaim:
+          claimName: docker-registry-web-data
+      - name: docker-registry-web-config
+        persistentVolumeClaim:
+          claimName: docker-registry-web-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: infrastructure
+  name: docker-registry-web
+  labels:
+    app: docker-registry-web
+  annotations:
+    metallb.universe.tf/allow-shared-ip: ekvm
+spec:
+  ports:
+  - name: http
+    port: 15013
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: docker-registry-web
+  loadBalancerIP: 172.16.1.198
+  type: LoadBalancer
+---

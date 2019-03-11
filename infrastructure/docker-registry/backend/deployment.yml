@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: infrastructure
+  name: docker-registry
+  labels:
+    app: docker-registry
+spec:
+  selector:
+    matchLabels:
+      app: docker-registry
+  template:
+    metadata:
+      labels:
+        app: docker-registry
+    spec:
+      containers:
+      - name: docker-registry
+        image: registry:latest 
+        volumeMounts:
+        - name: docker-registry-data
+          mountPath: /var/lib/registry
+        - name: docker-registry-config
+          mountPath: /etc/docker/registry
+        ports:
+        - name: registry
+          containerPort: 5000
+          protocol: TCP
+      volumes:
+      - name: docker-registry-data
+        persistentVolumeClaim:
+          claimName: docker-registry-data
+      - name: docker-registry-config
+        persistentVolumeClaim:
+          claimName: docker-registry-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: infrastructure
+  name: docker-registry
+  labels:
+    app: docker-registry
+  annotations:
+    metallb.universe.tf/allow-shared-ip: ekvm
+spec:
+  ports:
+  - name: registry
+    port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: docker-registry
+  loadBalancerIP: 172.16.1.198
+  type: LoadBalancer
+---
